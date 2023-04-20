@@ -1,0 +1,55 @@
+{
+  "name": "encode-flow-x6",
+  "private": true,
+  "packageManager": "pnpm@8.1.1",
+  "description": "转码流程图",
+  "author": "Ywenhao <actions.win@foxmail.com>",
+  "version": "0.0.0",
+  "type": "module",
+  "keywords": [
+    "ant-x6",
+    "encode-flow"
+  ],
+  "main": "src/index.js",
+  "module": "src/index.js",
+  "unpkg": "src/index.js",
+  "scripts": {
+    "dev": "pnpm -C playground/vue dev",
+    "dev-root": "vite --host",
+    "build": "tsc && vite build",
+    "unbuild": "rimraf dist && unbuild",
+    "preview": "vite preview",
+    "start": "esno src/index.ts",
+    "test": "vitest",
+    "prepublishOnly": "pnpm build",
+    "release": "bumpp && npm publish",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^0.38.5",
+    "@vitejs/plugin-vue": "^4.1.0",
+    "bumpp": "^9.1.0",
+    "eslint": "^8.38.0",
+    "eslint-define-config": "^1.18.0",
+    "lint-staged": "^13.2.1",
+    "rimraf": "^5.0.0",
+    "simple-git-hooks": "^2.8.1",
+    "typescript": "^5.0.4",
+    "unbuild": "^1.2.1",
+    "vite": "^4.2.1",
+    "vitest": "^0.30.1"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "pnpm lint-staged"
+  },
+  "lint-staged": {
+    "*": "eslint --fix"
+  },
+  "dependencies": {
+    "@antv/x6": "^2.9.7",
+    "@antv/x6-vue-shape": "^2.0.11",
+    "element-plus": "^2.3.3",
+    "vue": "^3.2.47"
+  }
+}
