@@ -1,8 +1,6 @@
 <script setup lang="ts">
+import { Popover } from '@arco-design/web-vue'
 import { ref } from 'vue'
-
-import 'element-plus/es/components/popover/style/css'
-import { ElPopover } from 'element-plus'
 
 const visible = ref(false)
 
@@ -36,18 +34,18 @@ function onClick(item: MenuItem) {
 <template>
   <div class="node-item">
     <div>test</div>
-    <ElPopover v-model:visible="visible" :offset="0" trigger="click">
-      <template #reference>
-        <div class="plus">
-          +
+    <Popover v-model:popup-visible="visible" trigger="click">
+      <div class="plus">
+        +
+      </div>
+      <template #content>
+        <div class="menu">
+          <div v-for="(item, index) in menuList" :key="index" class="menu-item" @click="onClick(item)">
+            {{ item.label }}
+          </div>
         </div>
       </template>
-      <div class="menu">
-        <div v-for="(item, index) in menuList" :key="index" class="menu-item" @click="onClick(item)">
-          {{ item.label }}
-        </div>
-      </div>
-    </ElPopover>
+    </Popover>
   </div>
 </template>
 
