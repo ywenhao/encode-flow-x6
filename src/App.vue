@@ -13,6 +13,9 @@ register({
   width: 120,
   height: 40,
   component: NodeItem,
+  data: {
+    color: 'red',
+  },
 })
 
 function initGraph() {
@@ -35,6 +38,16 @@ function initGraph() {
 onMounted(() => {
   initGraph()
 })
+
+setTimeout(() => {
+  getNode().setData({
+    color: 'blue',
+  })
+}, 1000)
+
+function getNode() {
+  return graphRef.value!.getNodes()[0]
+}
 </script>
 
 <template>

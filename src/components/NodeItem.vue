@@ -1,8 +1,17 @@
 <script setup lang="ts">
+import type { Node } from '@antv/x6'
 import { Popover } from '@arco-design/web-vue'
-import { ref } from 'vue'
+import { inject, ref } from 'vue'
 
 const visible = ref(false)
+
+const getNode = inject('getNode') as () => Node
+const node = getNode()
+const data = ref(node.getData())
+
+node.on('change:data', ({ current }) => {
+  data.value = current
+})
 
 interface MenuItem {
   label: string
@@ -29,6 +38,9 @@ function onClick(item: MenuItem) {
 
   visible.value = false
 }
+
+// const data = node.getData()
+// console.log(data)
 </script>
 
 <template>
@@ -53,7 +65,8 @@ function onClick(item: MenuItem) {
 .node-item {
   width: 100%;
   height: 100%;
-  border: 1px solid red;
+  border: 1px solid;
+  border-color: v-bind("data.color");
   display: flex;
   align-items: center;
   justify-content: space-between;
