@@ -2,6 +2,12 @@
 import type { Node } from '@antv/x6'
 import { Popover } from '@arco-design/web-vue'
 import { computed, inject, ref } from 'vue'
+import CloseIcon from './icons/CloseIcon.vue'
+
+interface MenuItem {
+  label: string
+  value: string
+}
 
 const visible = ref(false)
 
@@ -13,12 +19,11 @@ node.on('change:data', ({ current }) => {
   data.value = current
 })
 
-interface MenuItem {
-  label: string
-  value: string
-}
+console.log(node)
 
 const menuList = computed<MenuItem[]>(() => data.value.menuList || [])
+const status = computed(() => data.value.status || null)
+const closeBtnVisible = computed(() => data.value.closeBtnVisible || false)
 
 function onClick(item: MenuItem) {
   console.log(item)
@@ -28,12 +33,10 @@ function onClick(item: MenuItem) {
 </script>
 
 <template>
-  <div class="node-item">
+  <div class="node-item" :class="[status]">
     <div>test</div>
-    <Popover v-model:popup-visible="visible" trigger="click">
-      <div class="plus">
-        +
-      </div>
+    <Popover v-model:popup-visible="visible">
+      <CloseIcon class="close-icon" />
       <template #content>
         <div class="menu">
           <div v-for="(item, index) in menuList" :key="index" class="menu-item" @click="onClick(item)">
@@ -49,17 +52,44 @@ function onClick(item: MenuItem) {
 .node-item {
   width: 100%;
   height: 100%;
-  border: 1px solid;
-  border-color: v-bind("data?.color || '#000'");
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 10px;
+  padding: 7px;
   position: relative;
+  border-radius: 30px;
+  box-sizing: border-box;
+  border: 1px solid;
+  border-color: transparent;
+  background-color: #fff;
+  color: #1D2129;
+  cursor: pointer;
+
+  &.validate-error {
+    border-color: #F53F3F;
+  }
+  &:hover {
+    background-color: #F7F8FA;
+  }
+  &.success {
+    color: #00B42A;
+    border-color: #00B42A;
+    &:hover {
+      background-color: #E8FFEA;
+    }
+  }
+  &.error {
+    color: #F53F3F;
+    border-color: #F53F3F;
+    &:hover {
+      background-color: #FFDFD9;
+    }
+  }
 }
 
-.plus {
-  cursor: pointer;
+.close-icon {
+  width: 16px;
+  height: 16px;
 }
 
 .popover {

@@ -9,8 +9,8 @@ const { graphRef } = useFlow(containerRef)
 setTimeout(() => {
   graphRef.value?.addNode({
     shape: CUSTOM_NODE,
-    x: 100,
-    y: 100,
+    x: 40,
+    y: 40,
   })
 }, 1000)
 </script>
@@ -21,9 +21,12 @@ setTimeout(() => {
   </div>
 </template>
 
-<style scoped>
+<style>
 .app-content {
   width: 100%;
   height: 100%;
+}
+* {
+  box-sizing: border-box;
 }
 </style>

@@ -52,7 +52,7 @@ export function addEdge(graph: Graph, source: Edge.TerminalData, target: Edge.Te
 export function registerCustomNode() {
   register({
     shape: CUSTOM_NODE,
-    width: 120,
+    width: 140,
     height: 40,
     component: NodeItem,
   })
