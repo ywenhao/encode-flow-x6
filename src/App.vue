@@ -1,59 +1,23 @@
 <script setup lang="ts">
-import { Graph } from '@antv/x6'
-import { register } from '@antv/x6-vue-shape'
-import { onMounted, ref, shallowRef } from 'vue'
-import NodeItem from './components/NodeItem.vue'
+import { ref } from 'vue'
+import { useFlow } from './useFlow'
+import { CUSTOM_NODE } from './constants'
 
-const flowRef = ref<HTMLDivElement>()
-
-const graphRef = shallowRef<Graph>()
-
-register({
-  shape: 'custom-vue-node',
-  width: 120,
-  height: 40,
-  component: NodeItem,
-  data: {
-    color: 'red',
-  },
-})
-
-function initGraph() {
-  graphRef.value = new Graph({
-    container: flowRef.value!,
-    background: {
-      color: '#F2F7FA',
-    },
-    interacting: false,
-    autoResize: true,
-  })
-
-  graphRef.value.addNode({
-    shape: 'custom-vue-node',
-    x: 100,
-    y: 60,
-  })
-}
-
-onMounted(() => {
-  initGraph()
-})
+const containerRef = ref<HTMLDivElement>()
+const { graphRef } = useFlow(containerRef)
 
 setTimeout(() => {
-  getNode().setData({
-    color: 'blue',
+  graphRef.value?.addNode({
+    shape: CUSTOM_NODE,
+    x: 100,
+    y: 100,
   })
 }, 1000)
-
-function getNode() {
-  return graphRef.value!.getNodes()[0]
-}
 </script>
 
 <template>
   <div class="app-content">
-    <div ref="flowRef" />
-    <!-- <TeleportContainer /> -->
+    <div ref="containerRef" />
   </div>
 </template>
 

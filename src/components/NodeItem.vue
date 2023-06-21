@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import type { Node } from '@antv/x6'
 import { Popover } from '@arco-design/web-vue'
-import { inject, ref } from 'vue'
+import { computed, inject, ref } from 'vue'
 
 const visible = ref(false)
 
 const getNode = inject('getNode') as () => Node
 const node = getNode()
-const data = ref(node.getData())
+const data = ref(node.getData() || {})
 
 node.on('change:data', ({ current }) => {
   data.value = current
@@ -18,29 +18,13 @@ interface MenuItem {
   value: string
 }
 
-const menuList = ref<MenuItem[]>([
-  {
-    label: 'test1',
-    value: 'test1',
-  },
-  {
-    label: 'test2',
-    value: 'test2',
-  },
-  {
-    label: 'test3',
-    value: 'test3',
-  },
-])
+const menuList = computed<MenuItem[]>(() => data.value.menuList || [])
 
 function onClick(item: MenuItem) {
   console.log(item)
 
   visible.value = false
 }
-
-// const data = node.getData()
-// console.log(data)
 </script>
 
 <template>
@@ -61,12 +45,12 @@ function onClick(item: MenuItem) {
   </div>
 </template>
 
-<style scoped>
+<style lang="less" scoped>
 .node-item {
   width: 100%;
   height: 100%;
   border: 1px solid;
-  border-color: v-bind("data.color");
+  border-color: v-bind("data?.color || '#000'");
   display: flex;
   align-items: center;
   justify-content: space-between;
