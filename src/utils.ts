@@ -4,6 +4,7 @@ import { register } from '@antv/x6-vue-shape'
 import NodeItem from './components/NodeItem.vue'
 import { CUSTOM_NODE } from './constants'
 import type { NodeData, NodeType } from './types'
+import { store } from './store'
 
 /** 初始化 */
 export function initGraph(el: HTMLElement) {
@@ -57,7 +58,7 @@ export function addChildNode(graph: Graph, node: Node, type: NodeType) {
   let { x, y } = node.position()
   const children = node.getData<NodeData>().children || []
   x = x + 260
-  y = y + 100 * children.length
+  y = y + 80 * children.length
 
   const child = addNode(graph, x, y, { type })
   const data = node.getData<NodeData>()
@@ -85,6 +86,7 @@ export function deleteNode(graph: Graph, node: Node) {
     nodeIds.push(...ns)
     ids = [...ns]
   }
+  // 删除连线
   const edges = graph.getEdges()
   const edgeIds = edges.filter(edge => nodeIds.includes(edge.getSourceCellId()) || nodeIds.includes(edge.getTargetCellId())).map(edge => edge.id)
   graph.removeCells([...nodeIds, ...edgeIds])
@@ -93,11 +95,13 @@ export function deleteNode(graph: Graph, node: Node) {
 
 /** 重置位置 */
 export function resetPosition(graph: Graph) {
-
+  // TODO: 重置位置
+  console.log('resetPosition')
 }
 
 /** 添加连线 */
 export function addEdge(graph: Graph, source: Edge.TerminalData, target: Edge.TerminalData) {
+  // TODO: 添加连线, 拐点
   return graph.addEdge({
     source,
     target,
@@ -125,4 +129,9 @@ export function addEdge(graph: Graph, source: Edge.TerminalData, target: Edge.Te
       },
     },
   })
+}
+
+/** 选中节点 */
+export function selectNode(node: Node) {
+  store.selectNode = store.selectNode === node ? undefined : node
 }

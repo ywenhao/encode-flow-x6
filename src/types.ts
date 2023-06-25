@@ -23,6 +23,5 @@ export interface NodeData {
   nodeId: string
   type: NodeType
   status: 'success' | 'validate-error' | 'error' | 'normal'
-  active: boolean
   children: string[]
 }

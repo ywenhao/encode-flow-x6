@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useFlow } from './useFlow'
 import { store } from './store'
 import { addStartNode } from './utils'
@@ -9,9 +9,9 @@ const { graphRef } = useFlow(containerRef)
 
 store.isEdit = true
 
-setTimeout(() => {
+onMounted(() => {
   addStartNode(graphRef.value!)
-}, 1000)
+})
 </script>
 
 <template>
