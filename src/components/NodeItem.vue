@@ -1,24 +1,24 @@
 <script setup lang="ts">
-import type { Node } from '@antv/x6'
+import type { Graph, Node } from '@antv/x6'
 import { Popover } from '@arco-design/web-vue'
 import { type Ref, computed, inject, ref } from 'vue'
-import type { NodeData } from '../types'
+import type { LabelValue } from '@arco-design/web-vue/es/tree-select/interface'
+import type { NodeData, NodeType } from '../types'
 import { nodeConfig } from '../constants'
 import { store } from '../store'
+import { addChildNode, deleteNode } from '../utils'
 import CloseIcon from './icons/CloseIcon.vue'
 import PlusIcon from './icons/PlusIcon.vue'
 import SuccessIcon from './icons/SuccessIcon.vue'
 import ErrorIcon from './icons/ErrorIcon.vue'
 
-interface MenuItem {
-  label: string
-  value: string
-}
-
 const popVisible = ref(false)
 
 const getNode = inject('getNode') as () => Node
+const getGraph = inject('getGraph') as () => Graph
 const node = getNode()
+const graph = getGraph()
+
 const data = ref(node.getData() || {}) as Ref<NodeData>
 const active = computed(() => data.value.active || false)
 const status = computed(() => data.value.status || 'default')
@@ -26,15 +26,21 @@ const status = computed(() => data.value.status || 'default')
 const config = nodeConfig[data.value.type]
 const NormalIcon = config.icon
 
+const menusVisible = computed(() => store.isEdit && config.menus.length)
+const closeBtnVisible = computed(() => store.isEdit && data.value.type !== 'start')
+
 node.on('change:data', ({ current }) => {
   data.value = current
 })
 
-// const closeBtnVisible = computed(() => data.value.closeBtnVisible || false)
-
-function onPopClick(item: MenuItem) {
-  console.log(item)
+function onPopClick(item: LabelValue) {
+  const type = item.value as NodeType
+  addChildNode(graph, node, type)
   popVisible.value = false
+}
+
+function handleDeleteNode() {
+  deleteNode(graph, node)
 }
 </script>
 
@@ -47,9 +53,9 @@ function onPopClick(item: MenuItem) {
       <div class="node-title">
         {{ config.title }}
       </div>
-      <CloseIcon v-if="store.isEdit" class="close-icon" />
+      <CloseIcon v-if="closeBtnVisible" class="close-icon" @click="handleDeleteNode" />
     </div>
-    <template v-if="store.isEdit">
+    <template v-if="menusVisible">
       <div class="line" />
       <Popover v-model:popup-visible="popVisible" content-class="node-popover-content">
         <PlusIcon class="plus-icon" />
@@ -66,6 +72,9 @@ function onPopClick(item: MenuItem) {
 </template>
 
 <style lang="less" scoped>
+svg:focus-visible, svg:focus {
+  outline: none;
+}
 .node-box {
   width: 100%;
   height: 100%;
@@ -115,17 +124,18 @@ function onPopClick(item: MenuItem) {
     top: 50%;
     transform: translateY(-50%);
     right: -41px;
+    z-index: 10;
   }
   .line {
     z-index: -1;
     display: inline-block;
-    width: 20px;
+    width: 25px;
     height: 1px;
     background-color: #C9CDD4;
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    right: -21px;
+    right: -25px;
   }
 
   .default-icon,

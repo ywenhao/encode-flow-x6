@@ -13,14 +13,16 @@ export interface NodeItem {
   menus: LabelValue[]
 }
 
-export type NodeKey = `${NODE_ENUM}`
+export type NodeType = `${NODE_ENUM}`
 
 export type NodeConfig = {
-  [T in NodeKey]: NodeItem
+  [T in NodeType]: NodeItem
 }
 
 export interface NodeData {
-  type: NodeKey
+  nodeId: string
+  type: NodeType
   status: 'success' | 'validate-error' | 'error' | 'normal'
   active: boolean
+  children: string[]
 }
