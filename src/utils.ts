@@ -38,13 +38,13 @@ export function registerCustomNode() {
 
 /** 添加节点 */
 export function addNode(graph: Graph, x: number, y: number, data?: Partial<NodeData>) {
-  const { type = 'start', status = 'normal', active = false, children = [] } = data || {}
+  const { type = 'start', status = 'normal', children = [] } = data || {}
   const node = graph.addNode({
     shape: CUSTOM_NODE, x, y,
   })
 
   const nodeId = node.id
-  node.setData({ nodeId, type, status, active, children })
+  node.setData({ nodeId, type, status, children })
   return node
 }
 

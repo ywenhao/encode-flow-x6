@@ -2,7 +2,7 @@
 import { onMounted, ref } from 'vue'
 import { useFlow } from './useFlow'
 import { store } from './store'
-import { addStartNode } from './utils'
+import { addStartNode, selectNode } from './utils'
 
 const containerRef = ref<HTMLDivElement>()
 const { graphRef } = useFlow(containerRef)
@@ -11,6 +11,10 @@ store.isEdit = true
 
 onMounted(() => {
   addStartNode(graphRef.value!)
+
+  graphRef.value?.on('node:click', ({ node }) => {
+    selectNode(node)
+  })
 })
 </script>
 

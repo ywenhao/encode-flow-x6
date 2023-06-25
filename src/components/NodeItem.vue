@@ -6,7 +6,7 @@ import type { LabelValue } from '@arco-design/web-vue/es/tree-select/interface'
 import type { NodeData, NodeType } from '../types'
 import { nodeConfig } from '../constants'
 import { store } from '../store'
-import { addChildNode, deleteNode, selectNode } from '../utils'
+import { addChildNode, deleteNode } from '../utils'
 import CloseIcon from './icons/CloseIcon.vue'
 import PlusIcon from './icons/PlusIcon.vue'
 import SuccessIcon from './icons/SuccessIcon.vue'
@@ -20,7 +20,7 @@ const node = getNode()
 const graph = getGraph()
 
 const data = ref(node.getData() || {}) as Ref<NodeData>
-const active = computed(() => store.selectNode ? false : store.selectNode === node)
+const active = computed(() => store.selectNode ? (store.selectNode === node) : false)
 const status = computed(() => data.value.status || 'default')
 
 const config = nodeConfig[data.value.type]
@@ -31,11 +31,6 @@ const closeBtnVisible = computed(() => store.isEdit && data.value.type !== 'star
 
 node.on('change:data', ({ current }) => {
   data.value = current
-})
-
-node.on('click:cell', (current) => {
-  console.log(current)
-  selectNode(node)
 })
 
 function onPopClick(item: LabelValue) {
