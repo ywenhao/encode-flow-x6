@@ -1,4 +1,5 @@
-import { type Edge, Graph } from '@antv/x6'
+import type { Edge } from '@antv/x6'
+import { Graph } from '@antv/x6'
 import { register } from '@antv/x6-vue-shape'
 import NodeItem from './components/NodeItem.vue'
 import { CUSTOM_NODE } from './constants'
@@ -24,6 +25,35 @@ export function initGraph(el: HTMLElement) {
   return graph
 }
 
+/** 注册自定义node */
+export function registerCustomNode() {
+  register({
+    shape: CUSTOM_NODE,
+    width: 140,
+    height: 40,
+    component: NodeItem,
+  })
+}
+
+/** 添加节点 */
+export function addNode(graph: Graph, x: number, y: number, data?: Partial<NodeData>) {
+  const { type = 'start', status = 'normal', active = false } = data || {}
+  return graph.addNode({
+    shape: CUSTOM_NODE,
+    x,
+    y,
+    data: { type, status, active },
+  })
+}
+
+/** 添加开始节点 */
+export function addStartNode(graph: Graph) {
+  return addNode(graph, 40, 40, { type: 'start' })
+}
+
+/** 添加子节点 */
+export function addChildNode(graph: Graph) {}
+
 /** 添加连线 */
 export function addEdge(graph: Graph, source: Edge.TerminalData, target: Edge.TerminalData) {
   graph.addEdge({
@@ -46,29 +76,5 @@ export function addEdge(graph: Graph, source: Edge.TerminalData, target: Edge.Te
         stroke: '#722ed1',
       },
     },
-  })
-}
-
-/** 注册自定义node */
-export function registerCustomNode() {
-  register({
-    shape: CUSTOM_NODE,
-    width: 140,
-    height: 40,
-    component: NodeItem,
-  })
-}
-
-/** 添加节点 */
-export function addNode(graph: Graph, x: number, y: number) {
-  return graph.addNode({
-    shape: CUSTOM_NODE,
-    x,
-    y,
-    data: {
-      type: 'start',
-      status: 'normal',
-      active: false,
-    } satisfies NodeData,
   })
 }
