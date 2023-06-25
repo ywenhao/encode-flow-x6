@@ -51,7 +51,7 @@ function onPopClick(item: MenuItem) {
     </div>
     <template v-if="store.isEdit">
       <div class="line" />
-      <Popover v-model:popup-visible="popVisible">
+      <Popover v-model:popup-visible="popVisible" content-class="node-popover-content">
         <PlusIcon class="plus-icon" />
         <template #content>
           <div class="menu">
@@ -144,26 +144,28 @@ function onPopClick(item: MenuItem) {
     margin-left: 4px;
     margin-right: auto;
   }
+}
 
-  .popover {
-    background: #fff;
-    box-shadow: 10px 10px 10px #80adf1;
-    position: absolute;
-    cursor: pointer;
-    width: 100px;
-  }
-  .menu {
-    padding: 2px 0;
-  }
-  .menu-item {
-    cursor: pointer;
-    padding: 5px;
-    text-align: center;
-    margin: 5px 0;
-  }
+.menu {
+  padding: 2px 0;
+}
+.menu-item {
+  cursor: pointer;
+  padding: 8px;
+  text-align: center;
+}
 
-  .menu-item:hover {
-    background: #f2fcff;
+.menu-item:hover {
+  background: #f2fcff;
+}
+
+:global(.node-popover-content) {
+  background: #fff;
+  width: 100px;
+  padding: 8px;
+  padding-bottom: 12px;
+  .arco-popover-content {
+    margin-top: 0;
   }
 }
 </style>
