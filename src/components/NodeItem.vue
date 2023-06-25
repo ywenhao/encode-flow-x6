@@ -1,115 +1,169 @@
 <script setup lang="ts">
 import type { Node } from '@antv/x6'
 import { Popover } from '@arco-design/web-vue'
-import { computed, inject, ref } from 'vue'
+import { type Ref, computed, inject, ref } from 'vue'
+import type { NodeData } from '../types'
+import { nodeConfig } from '../constants'
+import { store } from '../store'
 import CloseIcon from './icons/CloseIcon.vue'
+import PlusIcon from './icons/PlusIcon.vue'
+import SuccessIcon from './icons/SuccessIcon.vue'
+import ErrorIcon from './icons/ErrorIcon.vue'
 
 interface MenuItem {
   label: string
   value: string
 }
 
-const visible = ref(false)
+const popVisible = ref(false)
 
 const getNode = inject('getNode') as () => Node
 const node = getNode()
-const data = ref(node.getData() || {})
+const data = ref(node.getData() || {}) as Ref<NodeData>
+const active = computed(() => data.value.active || false)
+const status = computed(() => data.value.status || 'default')
+
+const config = nodeConfig[data.value.type]
+const NormalIcon = config.icon
 
 node.on('change:data', ({ current }) => {
   data.value = current
 })
 
-console.log(node)
+// const closeBtnVisible = computed(() => data.value.closeBtnVisible || false)
 
-const menuList = computed<MenuItem[]>(() => data.value.menuList || [])
-const status = computed(() => data.value.status || null)
-const closeBtnVisible = computed(() => data.value.closeBtnVisible || false)
-
-function onClick(item: MenuItem) {
+function onPopClick(item: MenuItem) {
   console.log(item)
-
-  visible.value = false
+  popVisible.value = false
 }
 </script>
 
 <template>
-  <div class="node-item" :class="[status]">
-    <div>test</div>
-    <Popover v-model:popup-visible="visible">
-      <CloseIcon class="close-icon" />
-      <template #content>
-        <div class="menu">
-          <div v-for="(item, index) in menuList" :key="index" class="menu-item" @click="onClick(item)">
-            {{ item.label }}
+  <div class="node-box">
+    <div class="node-item" :class="[status, { active }]">
+      <SuccessIcon v-if="status === 'success'" class="success-icon" />
+      <ErrorIcon v-else-if="status === 'error'" class="error-icon" />
+      <NormalIcon v-else class="normal-icon" />
+      <div class="node-title">
+        {{ config.title }}
+      </div>
+      <CloseIcon v-if="store.isEdit" class="close-icon" />
+    </div>
+    <template v-if="store.isEdit">
+      <div class="line" />
+      <Popover v-model:popup-visible="popVisible">
+        <PlusIcon class="plus-icon" />
+        <template #content>
+          <div class="menu">
+            <div v-for="(item) in config.menus" :key="item.label" class="menu-item" @click="onPopClick(item)">
+              {{ item.label }}
+            </div>
           </div>
-        </div>
-      </template>
-    </Popover>
+        </template>
+      </Popover>
+    </template>
   </div>
 </template>
 
 <style lang="less" scoped>
-.node-item {
+.node-box {
   width: 100%;
   height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 7px;
   position: relative;
-  border-radius: 30px;
-  box-sizing: border-box;
-  border: 1px solid;
-  border-color: transparent;
-  background-color: #fff;
-  color: #1D2129;
-  cursor: pointer;
+  .node-item {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px;
+    border-radius: 30px;
+    box-sizing: border-box;
+    border: 1px solid;
+    border-color: transparent;
+    background-color: #fff;
+    color: #1D2129;
+    cursor: pointer;
 
-  &.validate-error {
-    border-color: #F53F3F;
-  }
-  &:hover {
-    background-color: #F7F8FA;
-  }
-  &.success {
-    color: #00B42A;
-    border-color: #00B42A;
-    &:hover {
-      background-color: #E8FFEA;
+    &.validate-error {
+      border-color: #F53F3F;
+    }
+    &:hover, &.active {
+      background-color: #F7F8FA;
+    }
+    &.success {
+      color: #00B42A;
+      border-color: #00B42A;
+      &:hover, &.active {
+        background-color: #E8FFEA;
+      }
+    }
+    &.error {
+      color: #F53F3F;
+      border-color: #F53F3F;
+      &:hover, &.active {
+        background-color: #FFECE8;
+      }
     }
   }
-  &.error {
-    color: #F53F3F;
-    border-color: #F53F3F;
-    &:hover {
-      background-color: #FFDFD9;
-    }
+
+  .plus-icon {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    right: -41px;
   }
-}
+  .line {
+    z-index: -1;
+    display: inline-block;
+    width: 20px;
+    height: 1px;
+    background-color: #C9CDD4;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    right: -21px;
+  }
 
-.close-icon {
-  width: 16px;
-  height: 16px;
-}
+  .default-icon,
+  .success-icon,
+  .error-icon {
+    width: 26px;
+    height: 26px;
+  }
 
-.popover {
-  background: #fff;
-  box-shadow: 10px 10px 10px #80adf1;
-  position: absolute;
-  cursor: pointer;
-  width: 100px;
-}
-.menu {
-  padding: 2px 0;
-}
-.menu-item {
-  cursor: pointer;
-  padding: 5px;
-  text-align: center;
-  margin: 5px 0;
-}
+  .close-icon {
+    width: 16px;
+    height: 16px;
+  }
 
-.menu-item:hover {
-  background: #f2fcff;
+  .node-title {
+    margin-left: 4px;
+    margin-right: auto;
+  }
+
+  .popover {
+    background: #fff;
+    box-shadow: 10px 10px 10px #80adf1;
+    position: absolute;
+    cursor: pointer;
+    width: 100px;
+  }
+  .menu {
+    padding: 2px 0;
+  }
+  .menu-item {
+    cursor: pointer;
+    padding: 5px;
+    text-align: center;
+    margin: 5px 0;
+  }
+
+  .menu-item:hover {
+    background: #f2fcff;
+  }
 }
 </style>

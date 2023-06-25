@@ -2,6 +2,7 @@ import { type Edge, Graph } from '@antv/x6'
 import { register } from '@antv/x6-vue-shape'
 import NodeItem from './components/NodeItem.vue'
 import { CUSTOM_NODE } from './constants'
+import type { NodeData } from './types'
 
 /** 初始化 */
 export function initGraph(el: HTMLElement) {
@@ -64,5 +65,10 @@ export function addNode(graph: Graph, x: number, y: number) {
     shape: CUSTOM_NODE,
     x,
     y,
+    data: {
+      type: 'start',
+      status: 'normal',
+      active: false,
+    } satisfies NodeData,
   })
 }
