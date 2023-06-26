@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watchEffect } from 'vue'
 import { useFlow } from './useFlow'
 import { store } from './store'
-import { addStartNode, selectNode } from './utils'
+import { addStartNode } from './utils'
 
 const containerRef = ref<HTMLDivElement>()
 const { graphRef } = useFlow(containerRef)
@@ -11,11 +11,10 @@ store.isEdit = true
 
 onMounted(() => {
   addStartNode(graphRef.value!)
+})
 
-  graphRef.value?.on('node:click', ({ node }) => {
-    selectNode(node)
-    console.log(node.getData())
-  })
+watchEffect(() => {
+  console.log(store.selectNode)
 })
 </script>
 

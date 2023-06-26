@@ -6,7 +6,7 @@ import type { LabelValue } from '@arco-design/web-vue/es/tree-select/interface'
 import type { NodeData, NodeType } from '../types'
 import { nodeConfig } from '../constants'
 import { store } from '../store'
-import { addChildNode, deleteNode } from '../utils'
+import { addChildNode, deleteNode, selectNode } from '../utils'
 import CloseIcon from './icons/CloseIcon.vue'
 import PlusIcon from './icons/PlusIcon.vue'
 import SuccessIcon from './icons/SuccessIcon.vue'
@@ -40,12 +40,19 @@ function onPopClick(item: LabelValue) {
 }
 
 function handleDeleteNode() {
+  console.log('delete node')
+
   deleteNode(graph, node)
+}
+
+function handleNodeClick() {
+  // store.isEdit && selectNode(node)
+  selectNode(node)
 }
 </script>
 
 <template>
-  <div class="node-box">
+  <div class="node-box" @click="handleNodeClick">
     <div class="node-item" :class="[status, { active }]">
       <SuccessIcon v-if="status === 'success'" class="success-icon" />
       <ErrorIcon v-else-if="status === 'error'" class="error-icon" />

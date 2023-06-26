@@ -57,12 +57,13 @@ export function addStartNode(graph: Graph, id?: string) {
 /** 添加子节点 */
 export function addChildNode(graph: Graph, node: Node, type: NodeType, id?: string) {
   const { children, level } = node.getData<NodeData>()
-  const { x, y } = getChildNodePosition(graph, node, children.length)
+  const { x, y } = getChildNodePosition(node, children.length)
 
   const child = addNode(graph, x, y, { type, level: `${level}-${children.length}` }, id)
   const data = node.getData<NodeData>()
   node.setData({ ...data, isLeaf: false, children: [...children, child.id] }, { overwrite: true })
   addEdge(graph, node, child)
+  resetPosition(graph)
   return child
 }
 
@@ -96,6 +97,8 @@ export function deleteNode(graph: Graph, node: Node) {
 
 /** 重置位置 */
 export function resetPosition(graph: Graph) {
+  console.log(graph)
+
   const nodes = graph.getNodes()
   const edges = graph.getEdges()
   // 防止闪烁
@@ -113,7 +116,7 @@ export function resetPosition(graph: Graph) {
     const children = node.getData<NodeData>().children
     const childNodes = nodes.filter(v => children.includes(v.id))
     childNodes.forEach((child, index) => {
-      const { x, y } = getChildNodePosition(graph, node, index)
+      const { x, y } = getChildNodePosition(node, index)
       child.setPosition(x, y)
       resetNodePosition(child)
     })
@@ -141,7 +144,7 @@ export function getLevel(node: Node) {
 }
 
 /** 计算child node位置 */
-export function getChildNodePosition(graph: Graph, node: Node, index: number) {
+export function getChildNodePosition(node: Node, index: number) {
   let { x, y } = node.position()
   x = x + CUSTOM_NODE_WIDTH + GRID_SIZE * 6
   y = y + GRID_SIZE * 4 * index
