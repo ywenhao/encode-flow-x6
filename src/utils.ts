@@ -42,10 +42,10 @@ export function registerCustomNode() {
 
 /** 添加节点 */
 export function addNode(graph: Graph, x: number, y: number, data?: Partial<NodeData>, id?: string) {
-  const { type = 'start', status = 'normal', children = [] } = data || {}
+  const { type = 'start', status = 'normal', children = [], level = 0 } = data || {}
   const node = graph.addNode({ id, x, y, shape: CUSTOM_NODE })
   const nodeId = node.id
-  node.setData({ nodeId, type, status, children })
+  node.setData({ nodeId, type, status, children, level })
   return node
 }
 
@@ -57,11 +57,11 @@ export function addStartNode(graph: Graph, id?: string) {
 /** 添加子节点 */
 export function addChildNode(graph: Graph, node: Node, type: NodeType, id?: string) {
   let { x, y } = node.position()
-  const children = node.getData<NodeData>().children || []
+  const { children, level } = node.getData<NodeData>()
   x = x + CUSTOM_NODE_WIDTH + GRID_SIZE * 6
   y = y + GRID_SIZE * 4 * children.length
 
-  const child = addNode(graph, x, y, { type }, id)
+  const child = addNode(graph, x, y, { type, level: level + 1 }, id)
   const data = node.getData<NodeData>()
   node.setData({ ...data, children: [...children, child.id] }, { overwrite: true })
   addEdge(graph, node, child)

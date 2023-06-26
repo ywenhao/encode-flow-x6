@@ -22,6 +22,7 @@ export type NodeConfig = {
 export interface NodeData {
   nodeId: string
   type: NodeType
+  level: number
   status: 'success' | 'validate-error' | 'error' | 'normal'
   children: string[]
 }
