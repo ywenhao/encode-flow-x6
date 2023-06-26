@@ -14,6 +14,7 @@ onMounted(() => {
 
   graphRef.value?.on('node:click', ({ node }) => {
     selectNode(node)
+    console.log(node.getData())
   })
 })
 </script>

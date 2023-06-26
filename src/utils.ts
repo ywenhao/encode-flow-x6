@@ -42,10 +42,10 @@ export function registerCustomNode() {
 
 /** 添加节点 */
 export function addNode(graph: Graph, x: number, y: number, data?: Partial<NodeData>, id?: string) {
-  const { type = 'start', status = 'normal', children = [], level = 0 } = data || {}
+  const { type = 'start', status = 'normal', children = [], level = '0', isLeaf = true } = data || {}
   const node = graph.addNode({ id, x, y, shape: CUSTOM_NODE })
   const nodeId = node.id
-  node.setData({ nodeId, type, status, children, level })
+  node.setData({ nodeId, type, status, children, level, isLeaf })
   return node
 }
 
@@ -56,21 +56,19 @@ export function addStartNode(graph: Graph, id?: string) {
 
 /** 添加子节点 */
 export function addChildNode(graph: Graph, node: Node, type: NodeType, id?: string) {
-  let { x, y } = node.position()
   const { children, level } = node.getData<NodeData>()
-  x = x + CUSTOM_NODE_WIDTH + GRID_SIZE * 6
-  y = y + GRID_SIZE * 4 * children.length
+  const { x, y } = getChildNodePosition(graph, node, children.length)
 
-  const child = addNode(graph, x, y, { type, level: level + 1 }, id)
+  const child = addNode(graph, x, y, { type, level: `${level}-${children.length}` }, id)
   const data = node.getData<NodeData>()
-  node.setData({ ...data, children: [...children, child.id] }, { overwrite: true })
+  node.setData({ ...data, isLeaf: false, children: [...children, child.id] }, { overwrite: true })
   addEdge(graph, node, child)
   return child
 }
 
 /** 删除节点 */
 export function deleteNode(graph: Graph, node: Node) {
-  const { children } = node.getData<NodeData>()
+  const { children, isLeaf } = node.getData<NodeData>()
   const nodes = graph.getNodes()
   // 查找父节点, 删除父节点的children中的当前nodeId
   const fatherNode = nodes.find(v => v.getData<NodeData>().children.includes(node.id))!
@@ -91,8 +89,9 @@ export function deleteNode(graph: Graph, node: Node) {
   const edges = graph.getEdges()
   const edgeIds = edges.filter(edge => nodeIds.includes(edge.getSourceCellId()) || nodeIds.includes(edge.getTargetCellId())).map(edge => edge.id)
   graph.removeCells([...nodeIds, ...edgeIds])
-  // 删除的是叶子节点不重置位置
-  children.length && resetPosition(graph)
+  // 叶子节点中的最后一个节点,不重置位置,优化性能
+  const idx = fatherChildren.indexOf(node.id)
+  !(isLeaf && (idx === fatherChildren.length - 1)) && resetPosition(graph)
 }
 
 /** 重置位置 */
@@ -113,9 +112,9 @@ export function resetPosition(graph: Graph) {
   const resetNodePosition = (node: Node) => {
     const children = node.getData<NodeData>().children
     const childNodes = nodes.filter(v => children.includes(v.id))
-    const { x, y } = node.position()
     childNodes.forEach((child, index) => {
-      child.setPosition(x + CUSTOM_NODE_WIDTH + GRID_SIZE * 6, y + GRID_SIZE * 4 * index)
+      const { x, y } = getChildNodePosition(graph, node, index)
+      child.setPosition(x, y)
       resetNodePosition(child)
     })
   }
@@ -135,13 +134,23 @@ export function resetPosition(graph: Graph) {
   })
 }
 
+/** 获取level */
+export function getLevel(node: Node) {
+  const { level } = node.getData<NodeData>()
+  return level.split('-').map(v => Number(v))
+}
+
 /** 计算child node位置 */
-export function getChildNodePosition(graph: Graph, node: Node) {
-  // TODO: 计算child node位置
+export function getChildNodePosition(graph: Graph, node: Node, index: number) {
+  let { x, y } = node.position()
+  x = x + CUSTOM_NODE_WIDTH + GRID_SIZE * 6
+  y = y + GRID_SIZE * 4 * index
+  return { x, y }
 }
 
 /** 计算edge拐点 */
 export function getEdgeVertices(source: Node, target: Node) {
+  // TODO: 计算edge拐点, 优化拐点位置
   const fatherNode = source
   const childNode = target
   const fatherData = fatherNode.getData<NodeData>()

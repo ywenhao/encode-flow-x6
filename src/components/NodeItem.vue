@@ -53,7 +53,7 @@ function handleDeleteNode() {
       <div class="node-title">
         {{ config.title }}
       </div>
-      <CloseIcon v-if="closeBtnVisible" class="close-icon" @click="handleDeleteNode" />
+      <CloseIcon v-if="closeBtnVisible" class="close-icon" @click.stop="handleDeleteNode" />
     </div>
     <template v-if="menusVisible">
       <div class="line" />
