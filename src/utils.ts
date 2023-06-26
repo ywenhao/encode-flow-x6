@@ -1,4 +1,4 @@
-import type { Node } from '@antv/x6'
+import type { Edge, Node } from '@antv/x6'
 import { Graph } from '@antv/x6'
 import { register } from '@antv/x6-vue-shape'
 import NodeItem from './components/NodeItem.vue'
@@ -91,20 +91,51 @@ export function deleteNode(graph: Graph, node: Node) {
   const edges = graph.getEdges()
   const edgeIds = edges.filter(edge => nodeIds.includes(edge.getSourceCellId()) || nodeIds.includes(edge.getTargetCellId())).map(edge => edge.id)
   graph.removeCells([...nodeIds, ...edgeIds])
-  resetPosition(graph)
+  // 删除的是叶子节点不重置位置
+  children.length && resetPosition(graph)
 }
 
 /** 重置位置 */
 export function resetPosition(graph: Graph) {
   const nodes = graph.getNodes()
   const edges = graph.getEdges()
+  // 防止闪烁
+  edges.forEach(edge => edge.setAttrByPath('line/opacity', 0))
   const startNode = nodes.find(v => v.getData<NodeData>().type === 'start')
   if (!startNode)
     throw new Error('未找到开始节点')
 
-  const { x: startX, y: startY } = startNode.position()
+  // 重置节点位置
+  const resetNodePosition = (node: Node) => {
+    const children = node.getData<NodeData>().children
+    const childNodes = nodes.filter(v => children.includes(v.id))
+    const { x, y } = node.position()
+    childNodes.forEach((child, index) => {
+      child.setPosition(x + CUSTOM_NODE_WIDTH + GRID_SIZE * 6, y + GRID_SIZE * 4 * index)
+      resetNodePosition(child)
+    })
+  }
+  resetNodePosition(startNode)
+  // 重置连线位置
+  const resetEdgePosition = (edge: Edge) => {
+    const source = edge.getSourceNode()
+    const target = edge.getTargetNode()
+    const { x, y } = source!.position()
+    const { x: childX, y: childY } = target!.position()
+    // 拐点
+    const vertices = source!.getData<NodeData>().children.length > 1
+      ? [
+          { x: x + CUSTOM_NODE_WIDTH + GRID_SIZE * 3, y: y + CUSTOM_NODE_HEIGHT / 2 },
+          { x: childX - GRID_SIZE * 3, y: childY + CUSTOM_NODE_HEIGHT / 2 },
+        ]
+      : []
+    edge.setVertices(vertices)
+  }
 
-  console.log(startNode)
+  edges.forEach((edge) => {
+    resetEdgePosition(edge)
+    edge.setAttrByPath('line/opacity', 1)
+  })
 }
 
 /** 添加连线 */

@@ -57,7 +57,7 @@ function handleDeleteNode() {
     </div>
     <template v-if="menusVisible">
       <div class="line" />
-      <Popover v-model:popup-visible="popVisible" content-class="node-popover-content">
+      <Popover v-model:popup-visible="popVisible" position="bottom" content-class="node-popover-content">
         <PlusIcon class="plus-icon" />
         <template #content>
           <div class="menu">
