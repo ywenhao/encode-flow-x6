@@ -1,6 +1,7 @@
-import type { Edge, Node } from '@antv/x6'
+import type { Node } from '@antv/x6'
 import { Graph } from '@antv/x6'
 import { register } from '@antv/x6-vue-shape'
+import dagre from 'dagre'
 import NodeItem from './components/NodeItem.vue'
 import { CUSTOM_NODE, CUSTOM_NODE_HEIGHT, CUSTOM_NODE_WIDTH, GRID_SIZE } from './constants'
 import type { NodeData, NodeType } from './types'
@@ -41,35 +42,39 @@ export function registerCustomNode() {
 }
 
 /** 添加节点 */
-export function addNode(graph: Graph, x: number, y: number, data?: Partial<NodeData>, id?: string) {
+export function addNode(graph: Graph, data?: Partial<NodeData>, id?: string) {
+// export function addNode(graph: Graph, x: number, y: number, data?: Partial<NodeData>, id?: string) {
   const { type = 'start', status = 'normal', children = [], level = '0', isLeaf = true } = data || {}
-  const node = graph.addNode({ id, x, y, shape: CUSTOM_NODE })
+  const node = graph.addNode({ id, shape: CUSTOM_NODE })
+  // const node = graph.addNode({ id, x, y, shape: CUSTOM_NODE })
   const nodeId = node.id
   node.setData({ nodeId, type, status, children, level, isLeaf })
+  layout(graph)
   return node
 }
 
 /** 添加开始节点 */
 export function addStartNode(graph: Graph, id?: string) {
-  return addNode(graph, GRID_SIZE * 2, GRID_SIZE * 2, { type: 'start' }, id)
+  return addNode(graph, { type: 'start' }, id)
+  // return addNode(graph, GRID_SIZE * 2, GRID_SIZE * 2, { type: 'start' }, id)
 }
 
 /** 添加子节点 */
 export function addChildNode(graph: Graph, node: Node, type: NodeType, id?: string) {
   const { children, level } = node.getData<NodeData>()
-  const { x, y } = getChildNodePosition(node, children.length)
+  // const { x, y } = getChildNodePosition(node, children.length)
 
-  const child = addNode(graph, x, y, { type, level: `${level}-${children.length}` }, id)
+  // const child = addNode(graph, x, y, { type, level: `${level}-${children.length}` }, id)
+  const child = addNode(graph, { type, level: `${level}-${children.length}` }, id)
   const data = node.getData<NodeData>()
   node.setData({ ...data, isLeaf: false, children: [...children, child.id] }, { overwrite: true })
   addEdge(graph, node, child)
-  resetPosition(graph)
   return child
 }
 
 /** 删除节点 */
 export function deleteNode(graph: Graph, node: Node) {
-  const { children, isLeaf } = node.getData<NodeData>()
+  const { children } = node.getData<NodeData>()
   const nodes = graph.getNodes()
   // 查找父节点, 删除父节点的children中的当前nodeId
   const fatherNode = nodes.find(v => v.getData<NodeData>().children.includes(node.id))!
@@ -90,49 +95,63 @@ export function deleteNode(graph: Graph, node: Node) {
   const edges = graph.getEdges()
   const edgeIds = edges.filter(edge => nodeIds.includes(edge.getSourceCellId()) || nodeIds.includes(edge.getTargetCellId())).map(edge => edge.id)
   graph.removeCells([...nodeIds, ...edgeIds])
-  // 叶子节点中的最后一个节点,不重置位置,优化性能
-  const idx = fatherChildren.indexOf(node.id)
-  !(isLeaf && (idx === fatherChildren.length - 1)) && resetPosition(graph)
+  layout(graph)
 }
 
-/** 重置位置 */
-export function resetPosition(graph: Graph) {
-  console.log(graph)
-
+/** 自动布局 */
+export function layout(graph: Graph) {
   const nodes = graph.getNodes()
   const edges = graph.getEdges()
+  const g = new dagre.graphlib.Graph()
+  g.setGraph({ rankdir: 'LR', nodesep: GRID_SIZE * 2, ranksep: GRID_SIZE * 6, align: 'UL', marginx: -30, marginy: 20 })
+  g.setDefaultEdgeLabel(() => ({}))
+
+  const width = CUSTOM_NODE_WIDTH
+  const height = CUSTOM_NODE_HEIGHT
+  nodes.forEach((node) => {
+    const { x, y } = node.getPosition()
+    g.setNode(node.id, { width, height, x, y })
+  })
+
+  edges.forEach((edge) => {
+    const source = edge.getSource() as { cell: string }
+    const target = edge.getTarget() as { cell: string }
+    g.setEdge(source.cell, target.cell)
+  })
+
+  dagre.layout(g)
   // 防止闪烁
   const edgesOpacity = edges.map((edge) => {
     const opacity = edge.getAttrByPath('line/opacity') || 1
     edge.setAttrByPath('line/opacity', 0)
     return opacity as number
   })
-  const startNode = nodes.find(v => v.getData<NodeData>().type === 'start')
-  if (!startNode)
-    throw new Error('未找到开始节点')
 
-  // 重置节点位置
-  const resetNodePosition = (node: Node) => {
-    const children = node.getData<NodeData>().children
-    const childNodes = nodes.filter(v => children.includes(v.id))
-    childNodes.forEach((child, index) => {
-      const { x, y } = getChildNodePosition(node, index)
-      child.setPosition(x, y)
-      resetNodePosition(child)
-    })
-  }
-  resetNodePosition(startNode)
-
-  // 重置连线位置
-  const resetEdgePosition = (edge: Edge) => {
-    const source = edge.getSourceNode()!
-    const target = edge.getTargetNode()!
-    const vertices = getEdgeVertices(source, target)
-    edge.setVertices(vertices)
-  }
+  g.nodes().forEach((id) => {
+    const node = graph.getCellById(id) as Node
+    if (node) {
+      const pos = g.node(id)
+      node.position(pos.x, pos.y)
+    }
+  })
 
   edges.forEach((edge, i) => {
-    resetEdgePosition(edge)
+    const source = edge.getSourceNode()!
+    const target = edge.getTargetNode()!
+    const sourceBBox = source.getBBox()
+    const targetBBox = target.getBBox()
+    if (sourceBBox.y !== targetBBox.y) {
+      const gap = targetBBox.x - sourceBBox.x - sourceBBox.width
+      const fix = sourceBBox.width
+      const x = sourceBBox.x + fix + gap / 2
+      edge.setVertices([
+        { x, y: sourceBBox.center.y },
+        { x, y: targetBBox.center.y },
+      ])
+    }
+    else {
+      edge.setVertices([])
+    }
     edge.setAttrByPath('line/opacity', edgesOpacity[i])
   })
 }
@@ -153,7 +172,6 @@ export function getChildNodePosition(node: Node, index: number) {
 
 /** 计算edge拐点 */
 export function getEdgeVertices(source: Node, target: Node) {
-  // TODO: 计算edge拐点, 优化拐点位置
   const fatherNode = source
   const childNode = target
   const fatherData = fatherNode.getData<NodeData>()
@@ -172,11 +190,11 @@ export function getEdgeVertices(source: Node, target: Node) {
 
 /** 添加连线 */
 export function addEdge(graph: Graph, source: Node, target: Node) {
-  const vertices = getEdgeVertices(source, target)
-  return graph.addEdge({
+  // const vertices = getEdgeVertices(source, target)
+  const edge = graph.addEdge({
     source,
     target,
-    vertices,
+    // vertices,
     router: {
       name: 'normal',
       args: {
@@ -201,6 +219,8 @@ export function addEdge(graph: Graph, source: Node, target: Node) {
       },
     },
   })
+  layout(graph)
+  return edge
 }
 
 /** 选中节点 */

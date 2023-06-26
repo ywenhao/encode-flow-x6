@@ -40,8 +40,6 @@ function onPopClick(item: LabelValue) {
 }
 
 function handleDeleteNode() {
-  console.log('delete node')
-
   deleteNode(graph, node)
 }
 
@@ -52,8 +50,8 @@ function handleNodeClick() {
 </script>
 
 <template>
-  <div class="node-box" @click="handleNodeClick">
-    <div class="node-item" :class="[status, { active }]">
+  <div class="node-box">
+    <div class="node-item" :class="[status, { active }]" @click="handleNodeClick">
       <SuccessIcon v-if="status === 'success'" class="success-icon" />
       <ErrorIcon v-else-if="status === 'error'" class="error-icon" />
       <NormalIcon v-else class="normal-icon" />

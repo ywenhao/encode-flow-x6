@@ -49,6 +49,8 @@
     "@antv/x6": "^2.11.1",
     "@antv/x6-vue-shape": "^2.0.11",
     "@arco-design/web-vue": "^2.47.0",
+    "@types/dagre": "^0.7.48",
+    "dagre": "^0.8.5",
     "less": "^4.1.3",
     "vue": "^3.3.4"
   }
