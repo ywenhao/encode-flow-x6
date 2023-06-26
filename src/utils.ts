@@ -1,8 +1,8 @@
-import type { Edge, Node } from '@antv/x6'
+import type { Node } from '@antv/x6'
 import { Graph } from '@antv/x6'
 import { register } from '@antv/x6-vue-shape'
 import NodeItem from './components/NodeItem.vue'
-import { CUSTOM_NODE } from './constants'
+import { CUSTOM_NODE, CUSTOM_NODE_HEIGHT, CUSTOM_NODE_WIDTH, GRID_SIZE } from './constants'
 import type { NodeData, NodeType } from './types'
 import { store } from './store'
 
@@ -12,8 +12,12 @@ export function initGraph(el: HTMLElement) {
     container: el,
     autoResize: true,
     interacting: false,
+    connecting: {
+      sourceAnchor: 'right',
+      targetAnchor: 'left',
+    },
     grid: {
-      size: 20,
+      size: GRID_SIZE,
       visible: true,
       type: 'mesh',
       args: {
@@ -30,40 +34,37 @@ export function initGraph(el: HTMLElement) {
 export function registerCustomNode() {
   register({
     shape: CUSTOM_NODE,
-    width: 140,
-    height: 40,
+    width: CUSTOM_NODE_WIDTH,
+    height: CUSTOM_NODE_HEIGHT,
     component: NodeItem,
   })
 }
 
 /** 添加节点 */
-export function addNode(graph: Graph, x: number, y: number, data?: Partial<NodeData>) {
+export function addNode(graph: Graph, x: number, y: number, data?: Partial<NodeData>, id?: string) {
   const { type = 'start', status = 'normal', children = [] } = data || {}
-  const node = graph.addNode({
-    shape: CUSTOM_NODE, x, y,
-  })
-
+  const node = graph.addNode({ id, x, y, shape: CUSTOM_NODE })
   const nodeId = node.id
   node.setData({ nodeId, type, status, children })
   return node
 }
 
 /** 添加开始节点 */
-export function addStartNode(graph: Graph) {
-  return addNode(graph, 40, 40, { type: 'start' })
+export function addStartNode(graph: Graph, id?: string) {
+  return addNode(graph, GRID_SIZE * 2, GRID_SIZE * 2, { type: 'start' }, id)
 }
 
 /** 添加子节点 */
-export function addChildNode(graph: Graph, node: Node, type: NodeType) {
+export function addChildNode(graph: Graph, node: Node, type: NodeType, id?: string) {
   let { x, y } = node.position()
   const children = node.getData<NodeData>().children || []
-  x = x + 260
-  y = y + 80 * children.length
+  x = x + CUSTOM_NODE_WIDTH + GRID_SIZE * 6
+  y = y + GRID_SIZE * 4 * children.length
 
-  const child = addNode(graph, x, y, { type })
+  const child = addNode(graph, x, y, { type }, id)
   const data = node.getData<NodeData>()
   node.setData({ ...data, children: [...children, child.id] }, { overwrite: true })
-  addEdge(graph, { cell: node, port: 'out' }, { cell: child, port: 'in' })
+  addEdge(graph, node, child)
   return child
 }
 
@@ -95,18 +96,38 @@ export function deleteNode(graph: Graph, node: Node) {
 
 /** 重置位置 */
 export function resetPosition(graph: Graph) {
-  // TODO: 重置位置
-  console.log('resetPosition')
+  const nodes = graph.getNodes()
+  const edges = graph.getEdges()
+  const startNode = nodes.find(v => v.getData<NodeData>().type === 'start')
+  if (!startNode)
+    throw new Error('未找到开始节点')
+
+  const { x: startX, y: startY } = startNode.position()
+
+  console.log(startNode)
 }
 
 /** 添加连线 */
-export function addEdge(graph: Graph, source: Edge.TerminalData, target: Edge.TerminalData) {
-  // TODO: 添加连线, 拐点
+export function addEdge(graph: Graph, source: Node, target: Node) {
+  const fatherNode = source
+  const childNode = target
+  const fatherData = fatherNode.getData<NodeData>()
+  const { x, y } = fatherNode.position()
+  const { x: childX, y: childY } = childNode.position()
+  // 拐点
+  const vertices = fatherData.children.length > 1
+    ? [
+        { x: x + CUSTOM_NODE_WIDTH + GRID_SIZE * 3, y: y + CUSTOM_NODE_HEIGHT / 2 },
+        { x: childX - GRID_SIZE * 3, y: childY + CUSTOM_NODE_HEIGHT / 2 },
+      ]
+    : undefined
+
   return graph.addEdge({
     source,
     target,
+    vertices,
     router: {
-      name: 'er',
+      name: 'normal',
       args: {
         offset: 'center',
       },

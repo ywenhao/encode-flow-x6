@@ -5,6 +5,12 @@ import ScreenshotIcon from './components/icons/ScreenshotIcon.vue'
 
 /** 自定义节点名 */
 export const CUSTOM_NODE = 'custom-node'
+/** 网格尺寸 */
+export const GRID_SIZE = 20
+/** 自定义节点宽 */
+export const CUSTOM_NODE_WIDTH = 140
+/** 自定义节点高 */
+export const CUSTOM_NODE_HEIGHT = GRID_SIZE * 2
 
 export enum NODE_ENUM {
   '开始' = 'start',
