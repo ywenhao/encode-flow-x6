@@ -116,19 +116,12 @@ export function resetPosition(graph: Graph) {
     })
   }
   resetNodePosition(startNode)
+
   // 重置连线位置
   const resetEdgePosition = (edge: Edge) => {
-    const source = edge.getSourceNode()
-    const target = edge.getTargetNode()
-    const { x, y } = source!.position()
-    const { x: childX, y: childY } = target!.position()
-    // 拐点
-    const vertices = source!.getData<NodeData>().children.length > 1
-      ? [
-          { x: x + CUSTOM_NODE_WIDTH + GRID_SIZE * 3, y: y + CUSTOM_NODE_HEIGHT / 2 },
-          { x: childX - GRID_SIZE * 3, y: childY + CUSTOM_NODE_HEIGHT / 2 },
-        ]
-      : []
+    const source = edge.getSourceNode()!
+    const target = edge.getTargetNode()!
+    const vertices = getEdgeVertices(source, target)
     edge.setVertices(vertices)
   }
 
@@ -138,21 +131,32 @@ export function resetPosition(graph: Graph) {
   })
 }
 
-/** 添加连线 */
-export function addEdge(graph: Graph, source: Node, target: Node) {
+/** 计算child node位置 */
+export function getChildNodePosition(graph: Graph, node: Node) {
+  // TODO: 计算child node位置
+}
+
+/** 计算edge拐点 */
+export function getEdgeVertices(source: Node, target: Node) {
   const fatherNode = source
   const childNode = target
   const fatherData = fatherNode.getData<NodeData>()
+  if (fatherData.children.length <= 1)
+    return []
   const { x, y } = fatherNode.position()
   const { x: childX, y: childY } = childNode.position()
   // 拐点
-  const vertices = fatherData.children.length > 1
-    ? [
-        { x: x + CUSTOM_NODE_WIDTH + GRID_SIZE * 3, y: y + CUSTOM_NODE_HEIGHT / 2 },
-        { x: childX - GRID_SIZE * 3, y: childY + CUSTOM_NODE_HEIGHT / 2 },
-      ]
-    : undefined
+  const vertices = [
+    { x: x + CUSTOM_NODE_WIDTH + GRID_SIZE * 3, y: y + CUSTOM_NODE_HEIGHT / 2 },
+    { x: childX - GRID_SIZE * 3, y: childY + CUSTOM_NODE_HEIGHT / 2 },
+  ]
 
+  return vertices
+}
+
+/** 添加连线 */
+export function addEdge(graph: Graph, source: Node, target: Node) {
+  const vertices = getEdgeVertices(source, target)
   return graph.addEdge({
     source,
     target,

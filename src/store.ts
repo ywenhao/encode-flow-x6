@@ -1,9 +1,9 @@
 import type { Node } from '@antv/x6'
-import { reactive, ref } from 'vue'
+import { reactive, ref, shallowRef } from 'vue'
 
 function createStore() {
   const isEdit = ref(false)
-  const selectNode = ref<Node>()
+  const selectNode = shallowRef<Node>()
   return reactive({ isEdit, selectNode })
 }
 
