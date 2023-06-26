@@ -100,7 +100,11 @@ export function resetPosition(graph: Graph) {
   const nodes = graph.getNodes()
   const edges = graph.getEdges()
   // 防止闪烁
-  edges.forEach(edge => edge.setAttrByPath('line/opacity', 0))
+  const edgesOpacity = edges.map((edge) => {
+    const opacity = edge.getAttrByPath('line/opacity') || 1
+    edge.setAttrByPath('line/opacity', 0)
+    return opacity as number
+  })
   const startNode = nodes.find(v => v.getData<NodeData>().type === 'start')
   if (!startNode)
     throw new Error('未找到开始节点')
@@ -125,9 +129,9 @@ export function resetPosition(graph: Graph) {
     edge.setVertices(vertices)
   }
 
-  edges.forEach((edge) => {
+  edges.forEach((edge, i) => {
     resetEdgePosition(edge)
-    edge.setAttrByPath('line/opacity', 1)
+    edge.setAttrByPath('line/opacity', edgesOpacity[i])
   })
 }
 
