@@ -43,10 +43,8 @@ export function registerCustomNode() {
 
 /** 添加节点 */
 export function addNode(graph: Graph, data?: Partial<NodeData>, id?: string) {
-// export function addNode(graph: Graph, x: number, y: number, data?: Partial<NodeData>, id?: string) {
-  const { type = 'start', status = 'normal', children = [], level = '0', isLeaf = true } = data || {}
+  const { type = 'start', status = 'normal', children = [], level = '1', isLeaf = true } = data || {}
   const node = graph.addNode({ id, shape: CUSTOM_NODE })
-  // const node = graph.addNode({ id, x, y, shape: CUSTOM_NODE })
   const nodeId = node.id
   node.setData({ nodeId, type, status, children, level, isLeaf })
   layout(graph)
@@ -56,16 +54,13 @@ export function addNode(graph: Graph, data?: Partial<NodeData>, id?: string) {
 /** 添加开始节点 */
 export function addStartNode(graph: Graph, id?: string) {
   return addNode(graph, { type: 'start' }, id)
-  // return addNode(graph, GRID_SIZE * 2, GRID_SIZE * 2, { type: 'start' }, id)
 }
 
 /** 添加子节点 */
 export function addChildNode(graph: Graph, node: Node, type: NodeType, id?: string) {
   const { children, level } = node.getData<NodeData>()
-  // const { x, y } = getChildNodePosition(node, children.length)
 
-  // const child = addNode(graph, x, y, { type, level: `${level}-${children.length}` }, id)
-  const child = addNode(graph, { type, level: `${level}-${children.length}` }, id)
+  const child = addNode(graph, { type, level: `${level}-${children.length + 1}` }, id)
   const data = node.getData<NodeData>()
   node.setData({ ...data, isLeaf: false, children: [...children, child.id] }, { overwrite: true })
   addEdge(graph, node, child)

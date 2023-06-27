@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, watchEffect } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useFlow } from './useFlow'
 import { store } from './store'
 import { addStartNode } from './utils'
@@ -13,9 +13,12 @@ onMounted(() => {
   addStartNode(graphRef.value!)
 })
 
-watchEffect(() => {
-  console.log(store.selectNode)
-})
+watch(
+  () => store.selectNode,
+  (node) => {
+    console.log('selectNode', node)
+  },
+)
 </script>
 
 <template>
