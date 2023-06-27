@@ -165,31 +165,11 @@ export function getChildNodePosition(node: Node, index: number) {
   return { x, y }
 }
 
-/** 计算edge拐点 */
-export function getEdgeVertices(source: Node, target: Node) {
-  const fatherNode = source
-  const childNode = target
-  const fatherData = fatherNode.getData<NodeData>()
-  if (fatherData.children.length <= 1)
-    return []
-  const { x, y } = fatherNode.position()
-  const { x: childX, y: childY } = childNode.position()
-  // 拐点
-  const vertices = [
-    { x: x + CUSTOM_NODE_WIDTH + GRID_SIZE * 3, y: y + CUSTOM_NODE_HEIGHT / 2 },
-    { x: childX - GRID_SIZE * 3, y: childY + CUSTOM_NODE_HEIGHT / 2 },
-  ]
-
-  return vertices
-}
-
 /** 添加连线 */
 export function addEdge(graph: Graph, source: Node, target: Node) {
-  // const vertices = getEdgeVertices(source, target)
   const edge = graph.addEdge({
     source,
     target,
-    // vertices,
     router: {
       name: 'normal',
       args: {
