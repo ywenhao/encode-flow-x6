@@ -1,0 +1,32 @@
+<template>
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 20 20"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <rect
+      x="0.665"
+      y="0.665"
+      width="18.67"
+      height="18.67"
+      rx="9.335"
+      fill="white"
+    />
+    <path
+      d="M5.5 10H10M14.5 10H10M10 10V5.5M10 10V14.5"
+      stroke="#2253E6"
+      stroke-width="1.33"
+    />
+    <rect
+      x="0.665"
+      y="0.665"
+      width="18.67"
+      height="18.67"
+      rx="9.335"
+      stroke="#2253E6"
+      stroke-width="1.33"
+    />
+  </svg>
+</template>
